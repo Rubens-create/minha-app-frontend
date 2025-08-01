@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Clientes</title>
+    <!-- O SEU CSS FICA AQUI (o mesmo de antes, sem alterações) -->
+    <style>
+        :root {
+            --primary: #4285f4;
+            --primary-dark: #3367d6;
+            --secondary: #f1f3f4;
+            --text: #202124;
+            --text-light: #5f6368;
+            --success: #34a853; /* Aprovado */
+            --warning: #fbbc05; /* Aguard. Cliente */
+            --danger: #ea4335;  /* Negado */
+            --info: #785ef0;    /* Bloqueado */
+            --neutral: #adb5bd; /* Ñ Responde, Núm. Inválido, Sem Contato */
+            --flexy-blue: #007bff; /* Cor para o botão Flexy */
+            --border: #dadce0;
+            --treating: #6c757d; /* Novo: Cor para o status "Tratando" */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-select {
+            padding: 8px 10px;
+            margin-bottom: 3px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .selectstatustable {
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
+
+        .botoesdtewhatspp {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+            gap: 5px; 
+        }
+   
+        select, button {
+            padding: 8px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+     
+        select:focus {
+            border-color: var(--primary);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .secondary-btn {
+            background-color: var(--secondary);
+            color: var(--text);
+        }
+        
+        .secondary-btn:hover {
+            background-color: #e8eaed;
+        }
+        
+        .view-toggle {
+            display: flex;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .view-toggle button {
+            border-radius: 0;
+            background-color: white;
+            color: var(--text-light);
+            border: none;
+            padding: 8px 12px;
+        }
+        
+        .view-toggle button.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .client-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .client-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 300px;
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .client-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .client-name {
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+        }
+        
+        .client-id {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .store-info {
+            margin-bottom: 8px;
+        }
+        
+        .store-name {
+            font-weight: 500;
+        }
+        
+        .store-doc {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        
+        .transaction-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .transaction-details .detail {
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+        }
+        
+        .transaction-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        
+        .status-success { 
+            background-color: rgba(52, 168, 83, 0.15);
+            color: var(--success);
+        }
+        
+        .status-warning { 
+            background-color: rgba(251, 188, 5, 0.15);
+            color: var(--warning);
+        }
+        
+        .status-danger { 
+            background-color: rgba(234, 67, 53, 0.15);
+            color: var(--danger);
+        }
+        
+        .status-primary { 
+            background-color: rgba(66, 133, 244, 0.15);
+            color: var(--primary);
+        }
+
+        .status-info { 
+            background-color: rgba(120, 94, 240, 0.15);
+            color: var(--info);
+        }
+
+        .status-neutral { 
+            background-color: rgba(173, 181, 189, 0.15);
+            color: var(--neutral);
+        }
+
+        .status-treating { 
+            background-color: rgba(108, 117, 125, 0.15); 
+            color: var(--treating);
+        }
+        
+        .card-actions {
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .client-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .client-status select {
+            padding: 5px 8px;
+            font-size: 13px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%; 
+            max-width: 1200px; 
+            padding: 20px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 95vh; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px; 
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .modal-body {
+            margin-bottom: 15px; 
+            display: flex;
+            gap: 15px; 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+
+        .modal-left-container, .modal-right-container {
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow-y: auto; 
+            max-height: calc(95vh - 150px); 
+        }
+
+        .modal-left-container {
+            background: var(--secondary); 
+        }
+
+        .modal-left-container h4, .modal-right-container h4 { 
+            margin-bottom: 10px; 
+            font-size: 15px; 
+            color: var(--primary-dark); 
+            padding-bottom: 8px; 
+            border-bottom: 1px solid var(--border);
+        }
+
+        #checklistContainer { }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px; 
+            padding: 6px; 
+            border-radius: 3px;
+            background-color: #fff; 
+            border: 1px solid #e0e0e0; 
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 10px; 
+            width: 16px; 
+            height: 16px; 
+            cursor: pointer;
+            accent-color: var(--primary); 
+        }
+
+        .checklist-item label {
+            font-size: 13px; 
+            color: var(--text);
+            cursor: pointer;
+            flex-grow: 1; 
+        }
+        
+        .detail-group {
+            margin-bottom: 10px; 
+        }
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr; 
+            margin-bottom: 5px; 
+            padding: 3px 0; 
+            font-size: 13px; 
+        }
+
+        .detail-row:not(:last-child) {
+            border-bottom: 1px dashed #eee; 
+        }
+
+        .detail-row span:first-child { 
+            color: var(--text-light);
+            font-size: 12px; 
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px; 
+        }
+        
+        .table-view {
+            width: 100%;
+            overflow-x: auto;
+            display: none;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        
+        thead {
+            background-color: var(--secondary);
+        }
+        
+        th, td {
+            padding: 6px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            vertical-align: middle;
+        }
+        
+        th {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        tr:hover {
+            background-color: rgba(66, 133, 244, 0.05);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-size: 14px;
+            background-color: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(66, 133, 244, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        
+        .notification.success {
+            background-color: var(--success);
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .filter-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .transaction-details {
+                grid-template-columns: 1fr;
+            }
+            .modal-body {
+                flex-direction: column; 
+            }
+            .modal-left-container, .modal-right-container {
+                max-height: none; 
+            }
+        }
+        
+        #importProgress {
+            width: 100%;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #importStatus {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .filter-container {
+            position: relative;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .filter-trigger {
+            padding: 8px 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid #ddd;
+        }
+        
+        .filter-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 600px;
+            min-width: 300px;
+            width: calc(100vw - 40px);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            padding: 15px;
+            margin-top: 0;
+            display: none; 
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .filter-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 10px; 
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        .filter-group.date-filter-group {
+            display: flex;
+            flex-direction: column; /* Label acima, input e checkbox abaixo */
+        }
+        .date-input-container { /* Novo container para input de data e checkbox */
+            display: flex;
+            align-items: center; /* Alinha verticalmente */
+            border: 1px solid #ddd; /* Borda unificada */
+            border-radius: 4px;
+            padding-right: 5px; /* Espaço para o checkbox */
+        }
+        .date-input-container .filter-input[type="date"] {
+            flex-grow: 1;
+            border: none; /* Remove borda individual do input */
+            padding: 8px;
+            min-width: 0; /* Permite que o input encolha */
+        }
+        .date-input-container input[type="checkbox"]#filter-today-checkbox {
+            margin-left: 5px; /* Espaço entre input e checkbox */
+            width: auto; /* Tamanho automático para o checkbox */
+            height: auto;
+            accent-color: var(--primary);
+        }
+        
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .filter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+        
+        .close-filter {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .filter-group.checkbox-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group.checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .whatsapp-btn, .flexy-btn { 
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: none; 
+        }
+        .whatsapp-btn {
+            background-color: #25D366;
+        }
+        .whatsapp-btn:hover {
+            background-color: #20B356;
+        }
+        .flexy-btn {
+            background-color: var(--flexy-blue); 
+        }
+        .flexy-btn:hover {
+            background-color: #0056b3; 
+        }
+        
+        .whatsapp-icon, .flexy-icon { 
+            width: 18px; 
+            height: 18px;
+            fill: white; 
+        }
+        
+        #whatsappNumber {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 640px) {
+            .filter-card {
+                width: calc(100vw - 20px);
+                left: 0;
+                transform: none;
+            }
+            .filter-options {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+            }
+        }
+        
+        .status-badge-select {
+            border: none;
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            appearance: none;
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #444;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .status-badge-select.success { 
+            background-color: rgba(52, 168, 83, 0.15);
+            color: var(--success);
+        }
+        .status-badge-select.danger { 
+            background-color: rgba(234, 67, 53, 0.15);
+            color: var(--danger);
+        }
+        .status-badge-select.primary { 
+            background-color: rgba(66, 133, 244, 0.15);
+            color: var(--primary);
+        }
+        .status-badge-select.warning { 
+            background-color: rgba(251, 188, 5, 0.15);
+            color: var(--warning);
+        }
+        .status-badge-select.info { 
+            background-color: rgba(120, 94, 240, 0.15);
+            color: var(--info);
+        }
+        .status-badge-select.neutral { 
+            background-color: rgba(173, 181, 189, 0.15);
+            color: var(--neutral);
+        }
+        .status-badge-select.treating { 
+            background-color: rgba(108, 117, 125, 0.15);
+            color: var(--treating);
+        }
+
+
+        textarea#modalObservation {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%; 
+            padding: 8px;
+            min-height: 80px; 
+            max-height: 150px; 
+            resize: vertical;
+        }
+
+        textarea#modalObservation:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        #currentAttachmentLink {
+            display: block;
+            margin-top: 5px;
+            font-size: 13px;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        #currentAttachmentLink:hover {
+            color: var(--primary-dark);
+        }
+        #attachmentInput {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1>Sistema de Controle de Clientes</h1>
+            <div class="header-buttons">
+                <button id="refreshData" class="primary-btn">
+                    <span>⟳</span> Atualizar dados
+                </button>
+                <button id="importBtn" class="primary-btn" title="Função desativada nesta versão">
+                    <span>⇩</span> Importar XLSX
+                </button>
+                <button id="removeDuplicatesBtn" class="secondary-btn">
+                    <span>🗑️</span> Remover Duplicatas
+                </button>
+                <input type="file" id="xlsxFile" style="display: none;">
+            </div>
+        </header>
+        
+        <div id="importStatus" class="notification" style="display:none;"></div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar...">
+            </div>
+            
+            <div class="filter-container">
+                <div class="filter-trigger" id="filterTrigger">▼ Filtros</div>
+                
+                <div class="filter-card" id="filterCard">
+                    <div class="filter-header">
+                        <h4>Filtrar por:</h4>
+                        <button class="close-filter">×</button>
+                    </div>
+                    
+                    <div class="filter-options" id="filterOptions">
+                        <!-- Os filtros serão gerados dinamicamente pelo JS -->
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button id="applyFilters" class="primary-btn">Aplicar</button>
+                        <button id="resetFilters" class="secondary-btn">Limpar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-toggle">
+                <button id="cardView" class="active">Cards</button>
+                <button id="tableView">Tabela</button>
+            </div>
+        </div>
+        
+        <div id="cardsContainer" class="client-list"></div>
+        
+        <div id="tableContainer" class="table-view">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Loja</th>
+                        <th>Loja</th>
+                        <th>Data</th>
+                        <th>CPF/CNPJ</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+    </div>
+    
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalhes da Transação</h3>
+                <button class="close-modal">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Conteúdo do modal gerado dinamicamente -->
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="closeModalBtn">Fechar</button>
+                <button id="saveStatusAndTasksBtn" class="primary-btn">Salvar Status e Tarefas</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="whatsappModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enviar Mensagem via WhatsApp</h3>
+                <button class="close-modal" id="closeWhatsAppModal">×</button>
+            </div>
+            <div class="modal-body">
+                <label for="whatsappNumber">Número de Telefone (ex.: 5511999999999):</label>
+                <input type="text" id="whatsappNumber" placeholder="5511999999999">
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="cancelWhatsApp">Cancelar</button>
+                <button id="sendWhatsApp" class="primary-btn">Enviar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        Operação realizada com sucesso!
+    </div>
+    
+    <!-- SDK DO SUPABASE - ESSENCIAL PARA UPLOAD -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- BIBLIOTECA XLSX - MANTIDA CASO QUEIRA REATIVAR A IMPORTAÇÃO NO FUTURO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        // =========================================================================
+        // CONFIGURAÇÕES GLOBAIS - **CONFIGURE ISTO!**
+        // =========================================================================
+        const API_BASE_URL = 'https://api.seudominio.com.br'; // <-- SUBSTITUA PELA URL DA SUA API
+
+        // Configurações do Supabase (usado principalmente para o upload direto de arquivos)
+        const SUPABASE_URL = 'SEU_URL_DO_PROJETO_SUPABASE'; // <-- SUBSTITUA
+        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_SUPABASE'; // <-- SUBSTITUA
+        const supabase = supabase_js.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+        // =========================================================================
+        // VARIÁVEIS DE ESTADO DA APLICAÇÃO
+        // =========================================================================
+        let filteredData = []; // Armazena os dados da página atual
+        let currentPage = 1;
+        let itemsPerPage = 16;
+        let currentView = 'card';
+        let selectedClientId = null;
+        let whatsappClientId = null;
+        let totalItems = 0; // Total de itens para a paginação
+        let debounceTimer;
+
+        // Definições de tarefas e status (pode ser carregado da API no futuro)
+        const defaultTasks = [
+            { text: "Faz contrato", completed: false }, { text: "Fotos do cliente", completed: false },
+            { text: "Nota fiscal", completed: false }, { text: "Cliente avisando que recebeu", completed: false },
+            { text: "Prints da conversa", completed: false }, { text: "Consultar Serasa", completed: false },
+            { text: "Verificar Reclame Aqui", completed: false }, { text: "Verificar Redes Sociais", completed: false },
+            { text: "Ver Google Maps", completed: false }, { text: "Falar com vendedor", completed: false }
+        ];
+        let currentClientTasks = [];
+
+        const selectOptions = {
+            "Modelo Negócio": ["eCommerce", "Presencial"],
+            "Bandeira": ["VISA", "MASTERCARD", "ELO", "AMEX", "HIPERCARD", "ADIQ"],
+            "Produto": ["MASTERCARD", "MASTERCARD PRÉ PAGO", "MAESTRO", "VISA PRÉ PAGO", "VISA ELECTRON PRÉ PAGO", "VISA ELECTRON", "VISA", "ELO DEBITO PRÉ PAGO", "ELO DEBITO", "ELO CREDITO PRÉ PAGO", "ELO CREDITO", "HIPERCARD CREDITO", "AMEX", "ADIQ PIX DEBITO"],
+            "Status": ["Novo", "Aprovado", "Negado", "Aguard. Cliente", "Bloqueado", "Ñ Responde", "Núm. Inválido", "Tratando"],
+            "Tipo Transação": ["DÉBITO", "CRÉDITO PARCELADO LOJISTA", "PIX", "DESFAZIMENTO", "CRÉDITO À VISTA", "CANCELAMENTO"],
+            "Qtd Parcelas": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"]
+        };
+
+
+        // =========================================================================
+        // INICIALIZAÇÃO E EVENT LISTENERS
+        // =========================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFilterOptions(); // Renderiza os filtros estaticamente
+            fetchFilteredData();  // Carrega os dados iniciais
+
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    currentPage = 1;
+                    fetchFilteredData();
+                }, 500); // Debounce para evitar chamadas excessivas à API
+            });
+
+            // Listeners dos botões principais
+            document.getElementById('cardView').addEventListener('click', () => switchView('card'));
+            document.getElementById('tableView').addEventListener('click', () => switchView('table'));
+            document.getElementById('refreshData').addEventListener('click', fetchFilteredData);
+            document.getElementById('removeDuplicatesBtn').addEventListener('click', confirmAndRemoveDuplicates);
+            
+            // Listeners do Modal de Detalhes
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.querySelector('#detailModal .close-modal').addEventListener('click', closeModal);
+            document.getElementById('saveStatusAndTasksBtn').addEventListener('click', saveClientStatusAndTasks);
+
+            // Listeners do Modal de WhatsApp
+            document.getElementById('closeWhatsAppModal').addEventListener('click', closeWhatsAppModal);
+            document.getElementById('cancelWhatsApp').addEventListener('click', closeWhatsAppModal);
+            document.getElementById('sendWhatsApp').addEventListener('click', sendWhatsAppMessage);
+
+            // Listeners do Modal de Filtros
+            document.getElementById('filterTrigger').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const filterCard = document.getElementById('filterCard');
+                filterCard.style.display = filterCard.style.display === 'block' ? 'none' : 'block';
+            });
+            document.querySelector('#filterCard .close-filter').addEventListener('click', () => document.getElementById('filterCard').style.display = 'none');
+            document.addEventListener('click', (e) => { 
+                if (!e.target.closest('.filter-container') && !e.target.closest('.filter-card')) {
+                    document.getElementById('filterCard').style.display = 'none';
+                }
+            });
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                currentPage = 1;
+                fetchFilteredData();
+                document.getElementById('filterCard').style.display = 'none';
+            });
+            document.getElementById('resetFilters').addEventListener('click', resetAllFilters);
+        });
+
+
+        // =========================================================================
+        // FUNÇÕES DE COMUNICAÇÃO COM A API (Substitutos de google.script.run)
+        // =========================================================================
+
+        async function fetchFilteredData() {
+            showLoading();
+            
+            const params = new URLSearchParams({
+                page: currentPage,
+                itemsPerPage: itemsPerPage,
+                search: document.getElementById('searchInput').value,
+                // Adicionando outros filtros
+                status: document.getElementById('filter-Status')?.value || '',
+                data_transacao: document.getElementById('filter-Data-Transação')?.value || '',
+                // Adicione outros campos de filtro aqui conforme necessário
+                above10k: document.getElementById('filter-above-10k')?.checked || false,
+            });
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/transactions?${params.toString()}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erro ao carregar dados');
+                }
+                const result = await response.json();
+                
+                filteredData = result.data;
+                totalItems = result.totalItems;
+                renderData();
+
+            } catch (error) {
+                handleError(error);
+                filteredData = [];
+                totalItems = 0;
+                renderData(); // Renderiza o estado vazio
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function updateClientData(payload) {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/update-client`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erro ao salvar dados');
+                }
+                
+                const result = await response.json();
+                showNotification(result.message, 'success');
+                await fetchFilteredData(); // Recarrega os dados para refletir as mudanças
+
+            } catch (error) {
+                handleError(error);
+            } finally {
+                hideLoading();
+                closeModal();
+            }
+        }
+
+
+        // =========================================================================
+        // LÓGICA DE RENDERIZAÇÃO DA UI
+        // =========================================================================
+        
+        function renderData() {
+            if (currentView === 'card') renderCards();
+            else renderTable();
+            renderPagination();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            if (!filteredData || filteredData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; width: 100%; padding: 30px;">Nenhum resultado encontrado.</p>';
+                return;
+            }
+            
+            filteredData.forEach((client, index) => {
+                const statusClass = getStatusClass(client.status);
+                const dataFormatada = formatDateToDDMMYY(new Date(client.data_transacao));
+                const valorFormatado = (client.valor_transacao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                card.dataset.clientIndex = index;
+                
+                let statusOptionsHtml = selectOptions.Status.map(statusOpt =>
+                    `<option value="${statusOpt}" ${client.status === statusOpt ? "selected" : ""}>${statusOpt}</option>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <h3 class="client-name" title="${client.loja || 'N/A'}">${client.loja || 'N/A'}</h3>
+                            <span class="client-id">ID Loja: ${client.id_loja || 'N/A'}</span>
+                        </div>
+                        <span class="status-badge status-${statusClass}">${client.status || 'N/A'}</span>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="detail"><span class="detail-label">TID</span><span class="detail-value">${client.tid || 'N/A'}</span></div>
+                        <div class="detail"><span class="detail-label">Data</span><span class="detail-value">${dataFormatada}</span></div>
+                        <div class="detail"><span class="detail-label">CPF/CNPJ</span><span class="detail-value">${client.cpf_cnpj_loja || 'N/A'}</span></div>
+                    </div>
+                    <div class="transaction-amount">${valorFormatado}</div>
+                    <div class="card-actions">
+                        <div class="client-status">
+                            <select class="status-select" data-client-index="${index}">
+                                ${statusOptionsHtml}
+                            </select>
+                        </div>
+                        <div><button class="secondary-btn view-details-btn" data-client-index="${index}">Detalhes</button></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            addEventListenersToItems();
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            if (!filteredData || filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">Nenhum resultado encontrado.</td></tr>';
+                return;
+            }
+            
+            filteredData.forEach((client, index) => {
+                const statusClass = getStatusClass(client.status);
+                const dataFormatada = formatDateToDDMMYY(new Date(client.data_transacao));
+                const valorFormatado = (client.valor_transacao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                let statusOptionsHtml = selectOptions.Status.map(statusOpt =>
+                    `<option value="${statusOpt}" ${client.status === statusOpt ? "selected" : ""}>${statusOpt}</option>`
+                ).join('');
+
+                const row = document.createElement('tr');
+                row.dataset.clientIndex = index;
+                row.innerHTML = `
+                    <td>${client.id_loja || 'N/A'}</td>
+                    <td>${client.loja || 'N/A'}</td>
+                    <td>${dataFormatada}</td>
+                    <td>${client.cpf_cnpj_loja || 'N/A'}</td>
+                    <td>${valorFormatado}</td>
+                    <td>
+                        <select class="status-badge-select ${statusClass}" data-client-index="${index}">
+                           ${statusOptionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <div class="botoesdtewhatspp">
+                            <button class="secondary-btn view-details-btn" data-client-index="${index}">Detalhes</button>
+                            <button class="flexy-btn" data-client-index="${index}" title="Abrir no Flexy">
+                                <svg class="flexy-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10.5858 13.4142L7.75735 10.5858L6.34314 12L12 17.6569L17.6568 12L16.2426 10.5858L13.4142 13.4142V4H10.5858V13.4142ZM5 20V15H3V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V15H19V20H5Z"/></svg>
+                            </button>
+                            <button class="whatsapp-btn" data-client-index="${index}" title="WhatsApp">
+                                <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.35 3.43 16.84L2.05 22L7.31 20.62C8.75 21.39 10.36 21.82 12.04 21.82H12.05C17.5 21.82 21.95 17.37 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 20.13C10.52 20.13 9.04 19.73 7.75 19L7.37 18.78L4.45 19.53L5.22 16.69L4.97 16.29C4.11 14.91 3.62 13.36 3.62 11.73C3.62 7.36 7.41 3.68 11.87 3.68C14.03 3.68 16.01 4.5 17.55 5.99C19.08 7.48 19.94 9.45 19.94 11.74C19.94 16.11 16.15 19.92 11.87 19.92L12.05 20.13ZM17.34 14.45C17.13 14.34 16.1 13.85 15.89 13.78C15.69 13.71 15.54 13.67 15.39 13.91C15.24 14.15 14.76 14.68 14.61 14.83C14.47 14.98 14.32 15 14.11 14.89C13.91 14.78 13.01 14.47 11.93 13.51C11.11 12.78 10.56 11.88 10.41 11.64C10.26 11.4 10.38 11.28 10.5 11.16C10.61 11.05 10.76 10.86 10.88 10.71C11 10.56 11.04 10.45 11.15 10.24C11.26 10.03 11.21 9.88 11.14 9.73C11.07 9.58 10.56 8.31 10.35 7.82C10.15 7.33 9.95 7.38 9.79 7.37H9.64C9.49 7.37 9.24 7.44 9.03 7.68C8.83 7.92 8.31 8.4 8.31 9.5C8.31 10.6 9.07 11.62 9.18 11.77C9.29 11.92 10.57 13.91 12.52 14.7C14.48 15.49 14.48 15.18 14.77 15.14C15.07 15.11 16.02 14.59 16.19 14.04C16.36 13.49 16.36 13.03 16.31 12.92C16.26 12.81 16.12 12.78 15.94 12.67C15.76 12.56 15.35 12.35 15.18 12.28L14.91 12.18C14.73 12.11 14.6 12.04 14.48 11.92C14.36 11.8 14.24 11.68 14.11 11.53C13.99 11.38 13.87 11.23 13.74 11.08C13.62 10.93 13.49 10.78 13.37 10.63C13.3 10.54 13.24 10.47 13.17 10.39C12.92 10.07 12.65 9.73 12.4 9.41C12.22 9.17 12.03 8.92 11.86 8.69C11.75 8.54 11.64 8.4 11.53 8.25C11.43 8.11 11.32 7.97 11.22 7.82C11.12 7.68 11.01 7.54 10.91 7.4C10.88 7.36 10.85 7.32 10.82 7.28C10.51 6.84 10.22 6.43 10.02 6.13C9.98 6.07 9.94 6.02 9.9 5.97C9.63 5.52 9.40 5.18 9.24 4.91C9.08 4.64 8.92 4.37 8.79 4.13C8.73 4.02 8.67 3.91 8.61 3.8C8.51 3.61 8.40 3.43 8.30 3.25C8.26 3.18 8.22 3.11 8.18 3.04C8.01 2.72 7.82 2.40 7.62 2.09C7.59 2.04 7.56 1.99 7.53 1.94L7.53 1.94C7.53 1.94 7.53 1.94 7.53 1.94Z"/></svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            addEventListenersToItems();
+        }
+
+        function addEventListenersToItems() {
+            document.querySelectorAll('.view-details-btn').forEach(btn => btn.addEventListener('click', function() { showClientDetails(this.dataset.clientIndex); }));
+            document.querySelectorAll('.status-select, .status-badge-select').forEach(select => select.addEventListener('change', function() { updateClientStatusFromList(this.dataset.clientIndex, this.value); }));
+            document.querySelectorAll('.whatsapp-btn').forEach(btn => btn.addEventListener('click', function() { showWhatsAppModal(this.dataset.clientIndex); }));
+            document.querySelectorAll('.flexy-btn').forEach(btn => btn.addEventListener('click', function() { openFlexyLink(this.dataset.clientIndex); }));
+        }
+
+        function renderPagination() {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (totalPages <= 1) return;
+
+            const createPageButton = (text, pageNum, isDisabled = false, isActive = false) => {
+                const button = document.createElement('button');
+                button.innerHTML = text;
+                button.disabled = isDisabled;
+                if (isActive) button.classList.add('active');
+                button.addEventListener('click', () => {
+                    currentPage = pageNum;
+                    fetchFilteredData();
+                });
+                return button;
+            };
+
+            paginationContainer.appendChild(createPageButton('«', currentPage - 1, currentPage === 1));
+            
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (currentPage <= 3) endPage = Math.min(totalPages, 5);
+            if (currentPage > totalPages - 3) startPage = Math.max(1, totalPages - 4);
+            
+            if (startPage > 1) {
+                paginationContainer.appendChild(createPageButton('1', 1));
+                if (startPage > 2) paginationContainer.appendChild(createPageButton('...', currentPage - 3, false)); 
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationContainer.appendChild(createPageButton(i, i, false, i === currentPage));
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) paginationContainer.appendChild(createPageButton('...', currentPage + 3, false)); 
+                paginationContainer.appendChild(createPageButton(totalPages, totalPages));
+            }
+            paginationContainer.appendChild(createPageButton('»', currentPage + 1, currentPage === totalPages));
+        }
+
+        // ... (as outras funções de renderização como renderFilterOptions, etc., continuam aqui)
+        function renderFilterOptions() {
+            const filterOptionsContainer = document.getElementById('filterOptions');
+            filterOptionsContainer.innerHTML = '';
+
+            // Filtro de Data
+            const dateFilterGroup = document.createElement('div');
+            dateFilterGroup.className = 'filter-group date-filter-group';
+            dateFilterGroup.innerHTML = `
+                <label>Data Transação</label>
+                <div class="date-input-container">
+                    <input type="date" id="filter-Data-Transação" class="filter-input">
+                </div>
+            `;
+            filterOptionsContainer.appendChild(dateFilterGroup);
+
+            // Filtro de Status
+            const statusFilterGroup = document.createElement('div');
+            statusFilterGroup.className = 'filter-group';
+            let statusOptions = selectOptions.Status.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            statusFilterGroup.innerHTML = `
+                <label>Status</label>
+                <select id="filter-Status" class="filter-input status-select">
+                    <option value="">Todos</option>
+                    ${statusOptions}
+                </select>
+            `;
+            filterOptionsContainer.appendChild(statusFilterGroup);
+            
+            // Filtro de Valor > 10k
+            const valueFilterGroup = document.createElement('div');
+            valueFilterGroup.className = 'filter-group checkbox-group';
+            valueFilterGroup.innerHTML = `
+                <label for="filter-above-10k">Valores > R$ 10.000</label>
+                <input type="checkbox" id="filter-above-10k" checked>
+            `;
+            filterOptionsContainer.appendChild(valueFilterGroup);
+        }
+
+        // =========================================================================
+        // LÓGICA DE INTERAÇÃO E MANIPULAÇÃO DE DADOS
+        // =========================================================================
+
+        function showClientDetails(clientIndex) {
+            selectedClientId = clientIndex;
+            const client = filteredData[clientIndex];
+            if (!client) return;
+
+            const companyData = client.companies_data || {};
+            currentClientTasks = companyData.tasks || JSON.parse(JSON.stringify(defaultTasks));
+
+            const modalBody = document.getElementById('modalBody');
+            
+            const dataFormatada = formatDateToDDMMYY(new Date(client.data_transacao));
+            const valorFormatado = (client.valor_transacao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            let modalStatusOptionsHtml = selectOptions.Status.map(opt => `<option value="${opt}" ${client.status === opt ? "selected" : ""}>${opt}</option>`).join('');
+
+            modalBody.innerHTML = `
+                <div class="modal-left-container">
+                    <h4>Checklist de Tarefas (CNPJ: ${client.cpf_cnpj_loja})</h4>
+                    <div id="checklistContainer"></div>
+                </div>
+                <div class="modal-right-container">
+                    <!-- Detalhes... -->
+                    <div class="detail-group">
+                        <h4>Informações da Loja</h4>
+                        <div class="detail-row"><span class="detail-label">ID Loja</span><span>${client.id_loja || 'N/A'}</span></div>
+                        <div class="detail-row"><span class="detail-label">Nome</span><span>${client.loja || 'N/A'}</span></div>
+                        <div class="detail-row"><span class="detail-label">CPF/CNPJ</span><span>${client.cpf_cnpj_loja || 'N/A'}</span></div>
+                    </div>
+                    <div class="detail-group">
+                        <h4>Informações da Transação</h4>
+                        <div class="detail-row"><span class="detail-label">TID</span><span>${client.tid || 'N/A'}</span></div>
+                        <div class="detail-row"><span class="detail-label">Data</span><span>${dataFormatada}</span></div>
+                        <div class="detail-row"><span class="detail-label">Valor</span><span>${valorFormatado}</span></div>
+                        <!-- Adicione outros campos de client.* aqui -->
+                    </div>
+                    <div class="detail-group">
+                        <h4>Status da Transação</h4>
+                        <select id="modalStatusSelect" class="status-select" style="width: 100%;">${modalStatusOptionsHtml}</select>
+                    </div>
+                    <div class="detail-group">
+                        <h4>Observação (CNPJ: ${client.cpf_cnpj_loja})</h4>
+                        <textarea id="modalObservation">${companyData.observation || ''}</textarea>
+                    </div>
+                    <div class="detail-group">
+                        <h4>Anexo (CNPJ: ${client.cpf_cnpj_loja})</h4>
+                        <input type="file" id="attachmentInput" accept="image/*, .pdf, .doc, .docx, .xls, .xlsx">
+                        <span id="currentAttachmentName" style="font-size: 13px; color: var(--text-light); margin-top: 5px; display: block;"></span>
+                        <a id="currentAttachmentLink" href="#" target="_blank" style="display: none;">Ver Anexo Atual</a>
+                    </div>
+                </div>
+            `;
+
+            renderChecklist(currentClientTasks);
+            
+            const attachmentLink = document.getElementById('currentAttachmentLink');
+            if (companyData.attachment_url) {
+                attachmentLink.href = companyData.attachment_url;
+                attachmentLink.style.display = 'block';
+                document.getElementById('currentAttachmentName').textContent = `Anexo atual: ${companyData.attachment_url.split('/').pop()}`;
+            }
+
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        async function saveClientStatusAndTasks() {
+            if (selectedClientId === null) return;
+            
+            const client = filteredData[selectedClientId];
+            const cnpj = client.cpf_cnpj_loja;
+            
+            const newStatus = document.getElementById('modalStatusSelect').value;
+            const newObservation = document.getElementById('modalObservation').value;
+            const tasks = currentClientTasks;
+            let attachmentUrl = (client.companies_data && client.companies_data.attachment_url) || null;
+
+            const attachmentInput = document.getElementById('attachmentInput');
+            if (attachmentInput.files.length > 0) {
+                const file = attachmentInput.files[0];
+                const filePath = `${cnpj}/${file.name}-${Date.now()}`;
+                
+                showLoading();
+                const { error: uploadError } = await supabase.storage
+                    .from('anexos') // Nome do seu bucket
+                    .upload(filePath, file, { upsert: true });
+                hideLoading();
+
+                if (uploadError) {
+                    handleError(new Error('Falha no upload do anexo.'));
+                    return;
+                }
+                
+                const { data } = supabase.storage.from('anexos').getPublicUrl(filePath);
+                attachmentUrl = data.publicUrl;
+            }
+
+            const payload = {
+                cnpj: cnpj,
+                newStatus: newStatus,
+                newObservation: newObservation,
+                tasks: tasks,
+                attachmentUrl: attachmentUrl
+            };
+            
+            await updateClientData(payload);
+        }
+
+        function updateClientStatusFromList(clientIndex, newStatus) {
+            const client = filteredData[clientIndex];
+            const payload = {
+                cnpj: client.cpf_cnpj_loja,
+                newStatus: newStatus,
+                newObservation: (client.companies_data && client.companies_data.observation) || '',
+                tasks: (client.companies_data && client.companies_data.tasks) || defaultTasks,
+                attachmentUrl: (client.companies_data && client.companies_data.attachment_url) || null
+            };
+            updateClientData(payload);
+        }
+
+        function resetAllFilters() {
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.filter-input').forEach(input => {
+                if(input.type === 'checkbox') input.checked = (input.id === 'filter-above-10k');
+                else input.value = '';
+            });
+            currentPage = 1;
+            fetchFilteredData();
+            document.getElementById('filterCard').style.display = 'none';
+        }
+
+        function renderChecklist(tasksToRender) {
+            const checklistContainer = document.getElementById('checklistContainer');
+            checklistContainer.innerHTML = '';
+            (tasksToRender || []).forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'checklist-item';
+                taskDiv.innerHTML = `
+                    <input type="checkbox" id="task-${index}" data-task-index="${index}" ${task.completed ? 'checked' : ''}>
+                    <label for="task-${index}">${task.text}</label>
+                `;
+                checklistContainer.appendChild(taskDiv);
+                taskDiv.querySelector(`#task-${index}`).addEventListener('change', function() {
+                    currentClientTasks[index].completed = this.checked;
+                });
+            });
+        }
+        
+        async function confirmAndRemoveDuplicates() {
+            if (confirm("Tem certeza que deseja remover as linhas duplicadas? Esta ação é irreversível.")) {
+                showLoading();
+                try {
+                    const response = await fetch(`${API_BASE_URL}/remove-duplicates`, { method: 'POST' });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    showNotification(result.message, 'success');
+                    await fetchFilteredData();
+                } catch (error) {
+                    handleError(error);
+                } finally {
+                    hideLoading();
+                }
+            }
+        }
+        
+        // =========================================================================
+        // FUNÇÕES AUXILIARES E UTILITÁRIOS
+        // =========================================================================
+        function showLoading() { document.querySelector('.loading').style.display = 'flex'; }
+        function hideLoading() { document.querySelector('.loading').style.display = 'none'; }
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; selectedClientId = null; }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => { notification.classList.remove('show'); }, 3000);
+        }
+        
+        function handleError(error) {
+            console.error("Ocorreu um erro:", error);
+            showNotification(error.message || "Ocorreu um erro desconhecido.", "error");
+        }
+
+        function formatDateToDDMMYY(date) { 
+            if (!date || isNaN(date.getTime())) return 'N/A';
+            // Adiciona o fuso horário para corrigir a data
+            const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(date.getTime() + userTimezoneOffset);
+
+            const day = String(correctedDate.getDate()).padStart(2, '0');
+            const month = String(correctedDate.getMonth() + 1).padStart(2, '0'); 
+            const year = String(correctedDate.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
+        function getStatusClass(status) {
+            if (!status) return 'warning'; 
+            const s = String(status).toLowerCase();
+            if (s.includes('aprovado')) return 'success';
+            if (s.includes('negado')) return 'danger';
+            if (s.includes('bloqueado')) return 'info';
+            if (s.includes('novo')) return 'primary';
+            if (s.includes('tratando')) return 'treating';
+            if (s.includes('ñ responde') || s.includes('núm. inválido')) return 'neutral';
+            if (s.includes('aguard. cliente')) return 'warning'; 
+            return 'warning'; 
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('cardView').classList.toggle('active', view === 'card');
+            document.getElementById('tableView').classList.toggle('active', view === 'table');
+            document.getElementById('cardsContainer').style.display = view === 'card' ? 'grid' : 'none';
+            document.getElementById('tableContainer').style.display = view === 'table' ? 'block' : 'none';
+            renderData();
+        }
+
+        function showWhatsAppModal(clientIndex) {
+            whatsappClientId = clientIndex; 
+            document.getElementById('whatsappModal').style.display = 'flex';
+            document.getElementById('whatsappNumber').focus();
+        }
+
+        function closeWhatsAppModal() {
+            document.getElementById('whatsappModal').style.display = 'none';
+            whatsappClientId = null;
+            document.getElementById('whatsappNumber').value = '';
+        }
+
+        function sendWhatsAppMessage() {
+            if (whatsappClientId === null) return;
+            let phoneNumber = document.getElementById('whatsappNumber').value.trim().replace(/\D/g, '');
+            if (phoneNumber.length < 11) {
+                showNotification("Número inválido!", "error");
+                return;
+            }
+            if (!phoneNumber.startsWith('55')) phoneNumber = '55' + phoneNumber;
+
+            const client = filteredData[whatsappClientId];
+            const message = `Olá! Tudo Joia? 😊  
+Aqui é o Rubens, da MyGateway (Soollarbank).
+
+Estamos finalizando a verificação de uma transação da loja *${client.loja || 'N/A'}* (CNPJ: ${client.cpf_cnpj_loja || 'N/A'}):  
+> *Bandeira:* ${client.bandeira || 'N/A'}
+> *Valor:* ${(client.valor_transacao || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+> *Cartão:* ${client.cartao ? `final ${client.cartao.slice(-4)}` : 'N/A'}
+
+Para garantir a segurança, preciso confirmar algumas informações com você.
+
+📞 62 3612-7074  
+📧 rubens@soollar.com.br  
+⚠️ *Importante:* se não respondermos essa análise, o valor da transação fica bloqueado até a verificação ser concluída (nº 3.682/2013).
+
+Fico no aguardo. É rapidinho 😉  
+Rubens - Prevenção e Análise de Risco
+🌐 https://mygateway.com.br`;
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}&app_absent=1`;
+            
+            window.open(whatsappUrl, '_blank');
+            closeWhatsAppModal();
+            showNotification("Abrindo WhatsApp...", "success");
+        }
+        
+        function openFlexyLink(clientIndex) {
+            const client = filteredData[clientIndex];
+            const cleanedCnpj = String(client.cpf_cnpj_loja || '').replace(/\D/g, '');
+            if (!cleanedCnpj) {
+                showNotification("CNPJ/CPF da loja não encontrado.", "warning");
+                return;
+            }
+            const baseUrl = "https://soollar.com.br/flexyadmin/order/list?number=&status=&shownCreatedAtStart=&createdAtStart=&shownCreatedAtEnd=&createdAtEnd=&orderUpdatedFrom=&orderUpdatedTo=&price-from=&price-to=&firstname=&tradeName=&companyName=&email=&cpf=&cnpj=**CNPJ**&payment=&shippingMethodReferenceCode=&carrierReferenceCode=&trackingCode=&product=&productOrVariantReferenceCode=&category=&additionalFields%5B1%5D=&additionalFields%5B2%5D=&additionalFields%5B3%5D=&additionalFields%5B4%5D=&additionalFields%5B5%5D=&additionalFields%5B6%5D=&additionalFields%5B7%5D=&additionalFields%5B8%5D=&additionalFields%5B9%5D=&additionalFields%5B10%5D=&additionalFields%5B11%5D=&additionalFields%5B13%5D=&selectShoppingStores=&agentName=&agentToken=&agentEmail=";
+            const finalUrl = baseUrl.replace("**CNPJ**", cleanedCnpj);
+            window.open(finalUrl, '_blank');
+        }
+
+    </script>
+</body>
+</html>
