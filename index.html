@@ -894,18 +894,22 @@
     <div class="container">
         <header>
             <h1>Sistema de Controle de Clientes</h1>
-            <div class="header-buttons">
-                <button id="refreshData" class="primary-btn">
-                    <span>⟳</span> Atualizar dados
-                </button>
-                <button id="importBtn" class="primary-btn" title="Função desativada nesta versão">
-                    <span>⇩</span> Importar XLSX
-                </button>
-                <button id="removeDuplicatesBtn" class="secondary-btn">
-                    <span>🗑️</span> Remover Duplicatas
-                </button>
-                <input type="file" id="xlsxFile" style="display: none;">
-            </div>
+<div class="header-buttons">
+    <button id="refreshData" class="primary-btn">
+        <span>⟳</span> Atualizar dados
+    </button>
+    <button id="importBtn" class="primary-btn" title="Função desativada nesta versão">
+        <span>⇩</span> Importar XLSX
+    </button>
+    <button id="removeDuplicatesBtn" class="secondary-btn">
+        <span>🗑️</span> Remover Duplicatas
+    </button>
+    <!-- NOVO BOTÃO AQUI -->
+    <button id="removeBelowValueBtn" class="secondary-btn" style="background-color: var(--danger); color: white;">
+        <span>💰</span> Remover < 8mil
+    </button>
+    <input type="file" id="xlsxFile" style="display: none;">
+</div>
         </header>
         
         <div id="importStatus" class="notification" style="display:none;"></div>
