@@ -906,7 +906,7 @@
     </button>
     <!-- NOVO BOTÃO AQUI -->
     <button id="removeBelowValueBtn" class="secondary-btn" style="background-color: var(--danger); color: white;">
-        <span>💰</span> Remover < 8mil
+        <span>💰</span> Remover < 10mil
     </button>
     <input type="file" id="xlsxFile" style="display: none;">
 </div>
@@ -1536,6 +1536,29 @@
                 }
             }
         }
+
+// NOVA FUNÇÃO AQUI
+async function confirmAndRemoveBelowValue() {
+    if (confirm("Tem certeza que deseja remover TODAS as transações com valor abaixo de R$ 10.000,00? Esta ação é irreversível.")) {
+        showLoading();
+        try {
+            const response = await fetch(`${API_BASE_URL}/remove-below-value`, { method: 'POST' });
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Falha ao remover transações.');
+            }
+
+            showNotification(result.message, 'success');
+            await fetchFilteredData(); // Essencial para atualizar a visualização após a deleção
+
+        } catch (error) {
+            handleError(error);
+        } finally {
+            hideLoading();
+        }
+    }
+}
         
         // =========================================================================
         // FUNÇÕES AUXILIARES E UTILITÁRIOS
