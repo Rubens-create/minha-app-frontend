@@ -1021,7 +1021,7 @@
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlcGJld2t5cWt6eHdhc210dXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NzI0NzMsImV4cCI6MjA2NjM0ODQ3M30.0TFWVPaZLoUEGH_XbT74ONuopjrf65fU2fW4xaEsk8Q';
             
             // CORREÇÃO AQUI: A variável global é 'supabase', não 'supabase_js'
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
             // =========================================================================
@@ -1390,8 +1390,7 @@
                     const filePath = `${cnpj}/${file.name}-${Date.now()}`;
                     
                     showLoading();
-                    const { error: uploadError } = await supabase.storage
-                        .from('anexos')
+const { error: uploadError } = await supabaseClient.storage.from('anexos')
                         .upload(filePath, file, { upsert: true });
                     hideLoading();
 
@@ -1400,7 +1399,7 @@
                         return;
                     }
                     
-                    const { data } = supabase.storage.from('anexos').getPublicUrl(filePath);
+                    const { data } = supabaseClient.storage.from('anexos').getPublicUrl(filePath);
                     attachmentUrl = data.publicUrl;
                 }
 
